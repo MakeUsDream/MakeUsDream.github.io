@@ -19,6 +19,11 @@ button {
     background:#00c3ff;
     color:black;
     cursor:pointer;
+    margin:10px;
+}
+button:disabled {
+    background:#555;
+    cursor:not-allowed;
 }
 select {
     padding:10px;
@@ -42,48 +47,59 @@ select {
     <option value="medusa">Medusa</option>
 </select>
 
-<br><br>
+<br>
 
 <input type="file" id="fileInput" accept=".txt" hidden>
 <button onclick="document.getElementById('fileInput').click()">skilleffect.txt Seç</button>
 
+<button id="processBtn" disabled>Düzenle & İndir</button>
+
 <div id="status"></div>
 
 <script>
-document.getElementById('fileInput').addEventListener('change', function(e) {
+let loadedContent = null;
+
+const fileInput = document.getElementById('fileInput');
+const processBtn = document.getElementById('processBtn');
+const status = document.getElementById('status');
+
+fileInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const status = document.getElementById("status");
-
-    // ✅ Dosya adı kontrolü
     if (file.name.toLowerCase() !== "skilleffect.txt") {
         status.innerHTML = "❌ Sadece skilleffect.txt dosyası seçebilirsin!";
-        e.target.value = ""; 
+        fileInput.value = "";
+        processBtn.disabled = true;
         return;
     }
 
-    status.innerHTML = "📂 Dosya yüklendi, düzenleniyor...";
-
     const reader = new FileReader();
     reader.onload = function(event) {
-        let content = event.target.result;
-        const mode = document.getElementById("mode").value;
-
-        // ⚙️ BURASI PowerShell mantığının JS versiyonunun geleceği yer
-        content += "\r\n// Web Editor ile düzenlendi (" + mode + ")";
-
-        // 💾 Aynı isimle indir
-        const blob = new Blob([content], { type: "text/plain" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "skilleffect.txt";
-        a.click();
-
-        status.innerHTML = "✅ İşlem tamamlandı! Dosya indirildi.";
+        loadedContent = event.target.result;
+        status.innerHTML = "✅ Dosya hazır. Şimdi 'Düzenle & İndir' butonuna basabilirsin.";
+        processBtn.disabled = false;
     };
 
-    reader.readAsText(file, "utf-16le"); // senin dosya encoding'in
+    reader.readAsText(file, "utf-16le");
+});
+
+processBtn.addEventListener('click', function() {
+    if (!loadedContent) return;
+
+    const mode = document.getElementById("mode").value;
+    let content = loadedContent;
+
+    // 🔧 BURADA PowerShell mantığının JS karşılığı olacak
+    content += "\r\n// Web Editor ile düzenlendi (" + mode + ")";
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "skilleffect.txt";
+    a.click();
+
+    status.innerHTML = "🎉 İşlem tamamlandı! Güncellenmiş dosya indirildi.";
 });
 </script>
 
