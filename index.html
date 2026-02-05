@@ -25,6 +25,10 @@ select {
     font-size:16px;
     margin-bottom:20px;
 }
+#status {
+    margin-top:20px;
+    font-size:18px;
+}
 </style>
 </head>
 <body>
@@ -41,30 +45,45 @@ select {
 <br><br>
 
 <input type="file" id="fileInput" accept=".txt" hidden>
-<button onclick="document.getElementById('fileInput').click()">Skilleffect.txt Seç</button>
+<button onclick="document.getElementById('fileInput').click()">skilleffect.txt Seç</button>
+
+<div id="status"></div>
 
 <script>
 document.getElementById('fileInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
+    const status = document.getElementById("status");
+
+    // ✅ Dosya adı kontrolü
+    if (file.name.toLowerCase() !== "skilleffect.txt") {
+        status.innerHTML = "❌ Sadece skilleffect.txt dosyası seçebilirsin!";
+        e.target.value = ""; 
+        return;
+    }
+
+    status.innerHTML = "📂 Dosya yüklendi, düzenleniyor...";
+
     const reader = new FileReader();
     reader.onload = function(event) {
         let content = event.target.result;
-
         const mode = document.getElementById("mode").value;
 
-        // BURAYA PowerShell'deki düzenleme mantığını JS olarak ekleyeceğiz
-        // Şimdilik örnek değişiklik yapıyoruz:
-        content += "\n// Edited with Skilleffect Web Editor (" + mode + ")";
+        // ⚙️ BURASI PowerShell mantığının JS versiyonunun geleceği yer
+        content += "\r\n// Web Editor ile düzenlendi (" + mode + ")";
 
+        // 💾 Aynı isimle indir
         const blob = new Blob([content], { type: "text/plain" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = "skilleffect_edited.txt";
+        a.download = "skilleffect.txt";
         a.click();
+
+        status.innerHTML = "✅ İşlem tamamlandı! Dosya indirildi.";
     };
-    reader.readAsText(file, "utf-16le"); // senin dosya Unicode olduğu için
+
+    reader.readAsText(file, "utf-16le"); // senin dosya encoding'in
 });
 </script>
 
