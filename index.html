@@ -115,15 +115,15 @@ button:disabled {
 
 <div class="header">
     <h1>
-        <a href="https://www.youtube.com/@DanteTips" target="_blank">
-            DANTE TIPS
+        <a href="https://www.youtube.com/@PuB-silkroad" target="_blank">
+            PuB
         </a>
     </h1>
     <p>Skilleffect Editor Web</p>
 </div>
 
 <div class="panel" id="loginPanel">
-    <h2>🔐 Giriş Yap</h2>
+    <h2>ID / PW giriniz.</h2>
     <input type="text" id="username" placeholder="Kullanıcı Adı">
     <input type="password" id="password" placeholder="Şifre">
     <button onclick="login()">Giriş Yap</button>
@@ -141,9 +141,9 @@ button:disabled {
     </select>
 
     <input type="file" id="fileInput" accept=".txt" hidden>
-    <button onclick="document.getElementById('fileInput').click()">skilleffect.txt Seç</button>
+    <button onclick="document.getElementById('fileInput').click()">Düzenlenecek skilleffect'i seç.</button>
 
-    <button id="processBtn" disabled>Düzenle & İndir</button>
+    <button id="processBtn" disabled>İndir!</button>
 
     <div id="status"></div>
 </div>
@@ -157,7 +157,7 @@ fetch("whitelist.txt")
         whitelist = data.split("\n").map(x => x.trim()).filter(Boolean);
     })
     .catch(() => {
-        document.getElementById("loginStatus").innerHTML = "❌ Lisans sunucusuna ulaşılamadı.";
+        document.getElementById("loginStatus").innerHTML = "Sistemsel bir sorun yüzünden giriş yapılamadı.";
     });
 
 function login() {
@@ -169,7 +169,7 @@ function login() {
         document.getElementById("loginPanel").style.display = "none";
         document.getElementById("editorPanel").style.display = "block";
     } else {
-        document.getElementById("loginStatus").innerHTML = "❌ Hatalı kullanıcı adı veya şifre!";
+        document.getElementById("loginStatus").innerHTML = "Yanlış kullanıcı adı/şifre ile giriş yaptınız.";
     }
 }
 
@@ -183,7 +183,7 @@ fileInput.addEventListener('change', function(e) {
     if (!file) return;
 
     if (file.name.toLowerCase() !== "skilleffect.txt") {
-        status.innerHTML = "❌ Sadece skilleffect.txt seçebilirsin!";
+        status.innerHTML = "Yanlış dosyayı seçtin. Doğru skilleffect dosyasını seçtiğinden emin ol.";
         processBtn.disabled = true;
         return;
     }
@@ -191,7 +191,7 @@ fileInput.addEventListener('change', function(e) {
     const reader = new FileReader();
     reader.onload = function(ev) {
         loadedContent = ev.target.result;
-        status.innerHTML = "✅ Dosya yüklendi. Düzenleyebilirsin.";
+        status.innerHTML = "Dosya başarı ile düzenlendi. İndirebilirsin.";
         processBtn.disabled = false;
     };
     reader.readAsText(file, "utf-16le");
@@ -201,7 +201,7 @@ processBtn.addEventListener('click', function() {
     if (!loadedContent) return;
 
     const mode = document.getElementById("mode").value;
-    let content = loadedContent + "\r\n// DanteTips Web Editor (" + mode + ")";
+    let content = loadedContent + "\r\n// skilleffect Editor by Echidna (" + mode + ")";
 
     const blob = new Blob([content], { type: "text/plain" });
     const a = document.createElement("a");
@@ -209,7 +209,7 @@ processBtn.addEventListener('click', function() {
     a.download = "skilleffect.txt";
     a.click();
 
-    status.innerHTML = "🎉 Dosya başarıyla düzenlendi ve indirildi!";
+    status.innerHTML = "Başarıyla indirildi. Çıkış yapabilirsin.";
 });
 </script>
 
