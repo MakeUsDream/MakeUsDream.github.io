@@ -2,43 +2,136 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Skilleffect Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DanteTips - Skilleffect Editor</title>
+
 <style>
+:root {
+    --bg: #0b0d10;
+    --card-bg: #161920;
+    --text-main: #e0e0e0;
+    --accent: #ff3333;
+    --gold: #ffcc00;
+}
+
 body {
-    background:#111;
-    color:white;
-    font-family:Arial;
-    text-align:center;
-    padding:50px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
-input, button, select {
-    padding:10px;
-    font-size:16px;
-    margin:8px;
-    border-radius:6px;
-    border:none;
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #1a202c 0%, #0b0d10 70%);
+    z-index: -1;
 }
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    margin: 10px 0;
+}
+
+.header a {
+    font-family: Impact, Arial Black, sans-serif;
+    font-size: 2.5rem;
+    color: var(--accent);
+    text-decoration: none;
+    text-shadow: 3px 3px 0 #000;
+    transition: 0.3s;
+}
+
+.header a:hover {
+    color: white;
+    text-shadow: 0 0 20px var(--accent), 3px 3px 0 #000;
+}
+
+.panel {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px 35px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    border: 1px solid #2a2f3a;
+    text-align: center;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+}
+
+input, select {
+    background: #0f1320;
+    color: white;
+    border: 1px solid #333;
+}
+
 button {
-    background:#00c3ff;
-    color:black;
-    cursor:pointer;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #111;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.25s;
 }
-#editorPanel { display:none; }
-#status { margin-top:20px; font-size:18px; }
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#editorPanel { display: none; }
+
+#loginStatus, #status {
+    margin-top: 10px;
+    font-size: 14px;
+}
 </style>
 </head>
 <body>
 
-<div id="loginPanel">
-    <h2>Giriş Yap</h2>
-    <input type="text" id="username" placeholder="Kullanıcı Adı"><br>
-    <input type="password" id="password" placeholder="Şifre"><br>
-    <button onclick="login()">Giriş</button>
+<div class="header">
+    <h1>
+        <a href="https://www.youtube.com/@DanteTips" target="_blank">
+            DANTE TIPS
+        </a>
+    </h1>
+    <p>Skilleffect Editor Web</p>
+</div>
+
+<div class="panel" id="loginPanel">
+    <h2>🔐 Giriş Yap</h2>
+    <input type="text" id="username" placeholder="Kullanıcı Adı">
+    <input type="password" id="password" placeholder="Şifre">
+    <button onclick="login()">Giriş Yap</button>
     <div id="loginStatus"></div>
 </div>
 
-<div id="editorPanel">
-    <h1>Skilleffect Editor Web</h1>
+<div class="panel" id="editorPanel">
+    <h2>⚙ Skilleffect Editor</h2>
 
     <select id="mode">
         <option value="resimli">Resimli</option>
@@ -46,7 +139,6 @@ button {
         <option value="resimli100">Resimli100</option>
         <option value="medusa">Medusa</option>
     </select>
-    <br>
 
     <input type="file" id="fileInput" accept=".txt" hidden>
     <button onclick="document.getElementById('fileInput').click()">skilleffect.txt Seç</button>
@@ -59,11 +151,10 @@ button {
 <script>
 let whitelist = [];
 
-// 🔽 Site açılınca whitelist dosyasını çek
 fetch("whitelist.txt")
     .then(res => res.text())
     .then(data => {
-        whitelist = data.split("\n").map(line => line.trim()).filter(line => line);
+        whitelist = data.split("\n").map(x => x.trim()).filter(Boolean);
     })
     .catch(() => {
         document.getElementById("loginStatus").innerHTML = "❌ Lisans sunucusuna ulaşılamadı.";
@@ -82,8 +173,6 @@ function login() {
     }
 }
 
-// ---------------- DOSYA İŞLEME ----------------
-
 let loadedContent = null;
 const fileInput = document.getElementById('fileInput');
 const processBtn = document.getElementById('processBtn');
@@ -94,19 +183,17 @@ fileInput.addEventListener('change', function(e) {
     if (!file) return;
 
     if (file.name.toLowerCase() !== "skilleffect.txt") {
-        status.innerHTML = "❌ Sadece skilleffect.txt dosyası seçebilirsin!";
-        fileInput.value = "";
+        status.innerHTML = "❌ Sadece skilleffect.txt seçebilirsin!";
         processBtn.disabled = true;
         return;
     }
 
     const reader = new FileReader();
-    reader.onload = function(event) {
-        loadedContent = event.target.result;
-        status.innerHTML = "✅ Dosya hazır. 'Düzenle & İndir' butonuna basabilirsin.";
+    reader.onload = function(ev) {
+        loadedContent = ev.target.result;
+        status.innerHTML = "✅ Dosya yüklendi. Düzenleyebilirsin.";
         processBtn.disabled = false;
     };
-
     reader.readAsText(file, "utf-16le");
 });
 
@@ -114,9 +201,7 @@ processBtn.addEventListener('click', function() {
     if (!loadedContent) return;
 
     const mode = document.getElementById("mode").value;
-    let content = loadedContent;
-
-    content += "\r\n// Web Editor ile düzenlendi (" + mode + ")";
+    let content = loadedContent + "\r\n// DanteTips Web Editor (" + mode + ")";
 
     const blob = new Blob([content], { type: "text/plain" });
     const a = document.createElement("a");
@@ -124,7 +209,7 @@ processBtn.addEventListener('click', function() {
     a.download = "skilleffect.txt";
     a.click();
 
-    status.innerHTML = "🎉 İşlem tamamlandı! Güncellenmiş dosya indirildi.";
+    status.innerHTML = "🎉 Dosya başarıyla düzenlendi ve indirildi!";
 });
 </script>
 
