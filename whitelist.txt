@@ -1,1 +1,1 @@
-echidna:echidna1
+ech:ech1
