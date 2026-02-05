@@ -11,54 +11,80 @@ body {
     text-align:center;
     padding:50px;
 }
-button {
-    padding:15px 25px;
-    font-size:18px;
+input, button, select {
+    padding:10px;
+    font-size:16px;
+    margin:8px;
+    border-radius:6px;
     border:none;
-    border-radius:8px;
+}
+button {
     background:#00c3ff;
     color:black;
     cursor:pointer;
-    margin:10px;
 }
-button:disabled {
-    background:#555;
-    cursor:not-allowed;
-}
-select {
-    padding:10px;
-    font-size:16px;
-    margin-bottom:20px;
-}
-#status {
-    margin-top:20px;
-    font-size:18px;
-}
+#editorPanel { display:none; }
+#status { margin-top:20px; font-size:18px; }
 </style>
 </head>
 <body>
 
-<h1>Skilleffect Editor Web</h1>
+<div id="loginPanel">
+    <h2>Giriş Yap</h2>
+    <input type="text" id="username" placeholder="Kullanıcı Adı"><br>
+    <input type="password" id="password" placeholder="Şifre"><br>
+    <button onclick="login()">Giriş</button>
+    <div id="loginStatus"></div>
+</div>
 
-<select id="mode">
-    <option value="resimli">Resimli</option>
-    <option value="kelebek">Kelebek</option>
-    <option value="resimli100">Resimli100</option>
-    <option value="medusa">Medusa</option>
-</select>
+<div id="editorPanel">
+    <h1>Skilleffect Editor Web</h1>
 
-<br>
+    <select id="mode">
+        <option value="resimli">Resimli</option>
+        <option value="kelebek">Kelebek</option>
+        <option value="resimli100">Resimli100</option>
+        <option value="medusa">Medusa</option>
+    </select>
+    <br>
 
-<input type="file" id="fileInput" accept=".txt" hidden>
-<button onclick="document.getElementById('fileInput').click()">skilleffect.txt Seç</button>
+    <input type="file" id="fileInput" accept=".txt" hidden>
+    <button onclick="document.getElementById('fileInput').click()">skilleffect.txt Seç</button>
 
-<button id="processBtn" disabled>Düzenle & İndir</button>
+    <button id="processBtn" disabled>Düzenle & İndir</button>
 
-<div id="status"></div>
+    <div id="status"></div>
+</div>
 
 <script>
-let loadedContent = null;
+let whitelist = [];
 
+// 🔽 Site açılınca whitelist dosyasını çek
+fetch("whitelist.txt")
+    .then(res => res.text())
+    .then(data => {
+        whitelist = data.split("\n").map(line => line.trim()).filter(line => line);
+    })
+    .catch(() => {
+        document.getElementById("loginStatus").innerHTML = "❌ Lisans sunucusuna ulaşılamadı.";
+    });
+
+function login() {
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const combo = user + ":" + pass;
+
+    if (whitelist.includes(combo)) {
+        document.getElementById("loginPanel").style.display = "none";
+        document.getElementById("editorPanel").style.display = "block";
+    } else {
+        document.getElementById("loginStatus").innerHTML = "❌ Hatalı kullanıcı adı veya şifre!";
+    }
+}
+
+// ---------------- DOSYA İŞLEME ----------------
+
+let loadedContent = null;
 const fileInput = document.getElementById('fileInput');
 const processBtn = document.getElementById('processBtn');
 const status = document.getElementById('status');
@@ -77,7 +103,7 @@ fileInput.addEventListener('change', function(e) {
     const reader = new FileReader();
     reader.onload = function(event) {
         loadedContent = event.target.result;
-        status.innerHTML = "✅ Dosya hazır. Şimdi 'Düzenle & İndir' butonuna basabilirsin.";
+        status.innerHTML = "✅ Dosya hazır. 'Düzenle & İndir' butonuna basabilirsin.";
         processBtn.disabled = false;
     };
 
@@ -90,7 +116,6 @@ processBtn.addEventListener('click', function() {
     const mode = document.getElementById("mode").value;
     let content = loadedContent;
 
-    // 🔧 BURADA PowerShell mantığının JS karşılığı olacak
     content += "\r\n// Web Editor ile düzenlendi (" + mode + ")";
 
     const blob = new Blob([content], { type: "text/plain" });
