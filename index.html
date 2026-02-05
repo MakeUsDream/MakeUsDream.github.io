@@ -1,40 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>MakeUsDream</title>
-    <style>
-        body {
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 100px;
-        }
-        h1 {
-            font-size: 50px;
-        }
-        p {
-            font-size: 20px;
-            opacity: 0.8;
-        }
-        .card {
-            margin: 40px auto;
-            padding: 20px;
-            width: 300px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Skilleffect Editor</title>
+<style>
+body {
+    background:#111;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+    padding:50px;
+}
+button {
+    padding:15px 25px;
+    font-size:18px;
+    border:none;
+    border-radius:8px;
+    background:#00c3ff;
+    color:black;
+    cursor:pointer;
+}
+select {
+    padding:10px;
+    font-size:16px;
+    margin-bottom:20px;
+}
+</style>
 </head>
 <body>
-    <h1>Welcome to MakeUsDream ✨</h1>
-    <p>This is my personal website powered by GitHub Pages.</p>
 
-    <div class="card">
-        <h2>Coming Soon</h2>
-        <p>More content will be added here.</p>
-    </div>
+<h1>Skilleffect Editor Web</h1>
+
+<select id="mode">
+    <option value="resimli">Resimli</option>
+    <option value="kelebek">Kelebek</option>
+    <option value="resimli100">Resimli100</option>
+    <option value="medusa">Medusa</option>
+</select>
+
+<br><br>
+
+<input type="file" id="fileInput" accept=".txt" hidden>
+<button onclick="document.getElementById('fileInput').click()">Skilleffect.txt Seç</button>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        let content = event.target.result;
+
+        const mode = document.getElementById("mode").value;
+
+        // BURAYA PowerShell'deki düzenleme mantığını JS olarak ekleyeceğiz
+        // Şimdilik örnek değişiklik yapıyoruz:
+        content += "\n// Edited with Skilleffect Web Editor (" + mode + ")";
+
+        const blob = new Blob([content], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "skilleffect_edited.txt";
+        a.click();
+    };
+    reader.readAsText(file, "utf-16le"); // senin dosya Unicode olduğu için
+});
+</script>
+
 </body>
 </html>
