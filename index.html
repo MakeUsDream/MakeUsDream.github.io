@@ -187,28 +187,36 @@ document.addEventListener("visibilitychange", () => {
 
 startBgLoop();
 
-// 🔐 PYTHON SERVER LOGIN
-function login() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
+<script>
+async function login() {
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
 
-    fetch("http://127.0.0.1:5000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-    })
-    .then(res => res.json())
-    .then(data => {
+    try {
+        const res = await fetch("http://127.0.0.1:5000/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: user,
+                password: pass
+            })
+        });
+
+        const data = await res.json();
+
         if (data.success) {
             document.getElementById("loginPanel").style.display = "none";
             document.getElementById("editorPanel").style.display = "block";
         } else {
-            document.getElementById("loginStatus").innerText = "Yanlış kullanıcı adı veya şifre.";
+            document.getElementById("loginStatus").innerHTML = "Yanlış kullanıcı adı/şifre.";
         }
-    })
-    .catch(() => {
-        document.getElementById("loginStatus").innerText = "Server çalışmıyor!";
-    });
+
+    } catch (e) {
+        document.getElementById("loginStatus").innerHTML = "Server'a bağlanılamadı.";
+        console.error(e);
+    }
 }
 </script>
 
