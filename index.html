@@ -33,18 +33,24 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: background 1.2s ease-in-out;
+    overflow: hidden;
 }
 
-body::before {
-    content: "";
+/* Arka plan katmanları */
+.bg-layer {
     position: fixed;
     inset: -20px;
-    background: url("background.png") center / cover no-repeat;
+    background-position: center;
+    background-size: cover;
     filter: blur(5px) brightness(0.5);
     transform: scale(1.1);
+    z-index: -2;
+    transition: opacity 1.2s ease-in-out;
+}
+
+#bg-layer-next {
     z-index: -1;
-    transition: background-image 1.2s ease-in-out;
+    opacity: 0;
 }
 
 .header {
@@ -63,11 +69,6 @@ body::before {
     text-decoration: none;
     text-shadow: 3px 3px 0 #000;
     transition: 0.2s ease;
-}
-
-.header a:hover {
-    color: #ffffff;
-    text-shadow: 3px 3px 0 #000;
 }
 
 .panel {
@@ -116,14 +117,14 @@ button:disabled {
 }
 
 #editorPanel { display: none; }
-
-#loginStatus, #status {
-    margin-top: 10px;
-    font-size: 14px;
-}
+#loginStatus, #status { margin-top: 10px; font-size: 14px; }
 </style>
 </head>
 <body>
+
+<!-- Arka plan katmanları -->
+<div id="bg-layer" class="bg-layer"></div>
+<div id="bg-layer-next" class="bg-layer"></div>
 
 <div class="header">
     <h1>
@@ -156,13 +157,57 @@ button:disabled {
 
     <input type="file" id="fileInput" accept=".txt" hidden>
     <button onclick="document.getElementById('fileInput').click()">Düzenlenecek skilleffect'i seç.</button>
-
     <button id="processBtn" disabled>İndir!</button>
-
     <div id="status"></div>
 </div>
 
 <script>
+
+const MAX_BG_INDEX = 2;
+const INTERVAL_MS = 15000;
+
+let currentIndex = 0;
+let intervalId = null;
+
+const layer1 = document.getElementById("bg-layer");
+const layer2 = document.getElementById("bg-layer-next");
+
+function bgName(i) {
+    return i === 0 ? "background.png" : `background${i}.png`;
+}
+
+layer1.style.backgroundImage = `url('${bgName(0)}')`;
+
+function nextBg() {
+    const nextIndex = (currentIndex + 1) % (MAX_BG_INDEX + 1);
+    layer2.style.backgroundImage = `url('${bgName(nextIndex)}')`;
+    layer2.style.opacity = 1;
+
+    setTimeout(() => {
+        layer1.style.backgroundImage = layer2.style.backgroundImage;
+        layer2.style.opacity = 0;
+        currentIndex = nextIndex;
+    }, 1200);
+}
+
+function startBgLoop() {
+    if (!intervalId) intervalId = setInterval(nextBg, INTERVAL_MS);
+}
+
+function stopBgLoop() {
+    if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+    }
+}
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopBgLoop();
+    else startBgLoop();
+});
+
+startBgLoop();
+
 let whitelist = [];
 
 fetch("whitelist.txt")
@@ -186,89 +231,6 @@ function login() {
         document.getElementById("loginStatus").innerHTML = "Yanlış kullanıcı adı/şifre ile giriş yaptınız.";
     }
 }
-
-/* === BACKGROUND ROTATION === */
-let bgIndex = 0;
-const MAX_BG_INDEX = 2; // background.png, background1.png, background2.png
-let bgInterval = null;
-
-function getBgPath(index) {
-    if (index === 0) return "background.png";
-    return "background" + index + ".png";
-}
-
-function setBackground(index) {
-    const path = getBgPath(index);
-    document.body.style.background = `url("${path}") center / cover no-repeat fixed`;
-}
-
-function startBackgroundRotation() {
-    if (bgInterval) return;
-
-    bgInterval = setInterval(() => {
-        bgIndex++;
-        if (bgIndex > MAX_BG_INDEX) bgIndex = 0;
-        setBackground(bgIndex);
-    }, 15000);
-}
-
-function stopBackgroundRotation() {
-    if (bgInterval) {
-        clearInterval(bgInterval);
-        bgInterval = null;
-    }
-}
-
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-        startBackgroundRotation();
-    } else {
-        stopBackgroundRotation();
-    }
-});
-
-setBackground(0);
-startBackgroundRotation();
-/* === BACKGROUND ROTATION END === */
-
-let loadedContent = null;
-const fileInput = document.getElementById('fileInput');
-const processBtn = document.getElementById('processBtn');
-const status = document.getElementById('status');
-
-fileInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.name.toLowerCase() !== "skilleffect.txt") {
-        status.innerHTML = "Yanlış dosyayı seçtin. Doğru skilleffect dosyasını seçtiğinden emin ol.";
-        processBtn.disabled = true;
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        loadedContent = ev.target.result;
-        status.innerHTML = "Dosya başarı ile düzenlendi. İndirebilirsin.";
-        processBtn.disabled = false;
-    };
-    reader.readAsText(file, "utf-16le");
-});
-
-processBtn.addEventListener('click', function() {
-    if (!loadedContent) return;
-
-    const mode = document.getElementById("mode").value;
-    let content = loadedContent + "\r\n// skilleffect Editor by Echidna (" + mode + ")";
-
-    const blob = new Blob([content], { type: "text/plain" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "skilleffect.txt";
-    a.click();
-
-    status.innerHTML = "Başarıyla indirildi. Çıkış yapabilirsin.";
-});
 </script>
 
 </body>
