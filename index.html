@@ -22,24 +22,6 @@
     filter: drop-shadow(2px 2px 4px #000);
 }
 
-/* === ARKA PLAN KATMANLARI === */
-.bg-layer {
-    position: fixed;
-    inset: -20px;
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-    filter: blur(5px) brightness(0.5);
-    transform: scale(1.1);
-    z-index: -2;
-    opacity: 0;
-    transition: opacity 1.8s ease-in-out;
-}
-
-.bg-layer.active {
-    opacity: 1;
-}
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: var(--bg);
@@ -51,6 +33,18 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    transition: background 1.2s ease-in-out;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: -20px;
+    background: url("background.png") center / cover no-repeat;
+    filter: blur(5px) brightness(0.5);
+    transform: scale(1.1);
+    z-index: -1;
+    transition: background-image 1.2s ease-in-out;
 }
 
 .header {
@@ -131,10 +125,6 @@ button:disabled {
 </head>
 <body>
 
-<!-- ARKA PLAN KATMANLARI -->
-<div class="bg-layer" id="bg1"></div>
-<div class="bg-layer" id="bg2"></div>
-
 <div class="header">
     <h1>
         <a href="https://www.youtube.com/@PuB-silkroad" target="_blank">
@@ -173,7 +163,6 @@ button:disabled {
 </div>
 
 <script>
-/* === LOGIN === */
 let whitelist = [];
 
 fetch("whitelist.txt")
@@ -198,7 +187,50 @@ function login() {
     }
 }
 
-/* === SKILLEFFECT === */
+/* === BACKGROUND ROTATION === */
+let bgIndex = 0;
+const MAX_BG_INDEX = 2; // background.png, background1.png, background2.png
+let bgInterval = null;
+
+function getBgPath(index) {
+    if (index === 0) return "background.png";
+    return "background" + index + ".png";
+}
+
+function setBackground(index) {
+    const path = getBgPath(index);
+    document.body.style.background = `url("${path}") center / cover no-repeat fixed`;
+}
+
+function startBackgroundRotation() {
+    if (bgInterval) return;
+
+    bgInterval = setInterval(() => {
+        bgIndex++;
+        if (bgIndex > MAX_BG_INDEX) bgIndex = 0;
+        setBackground(bgIndex);
+    }, 15000);
+}
+
+function stopBackgroundRotation() {
+    if (bgInterval) {
+        clearInterval(bgInterval);
+        bgInterval = null;
+    }
+}
+
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        startBackgroundRotation();
+    } else {
+        stopBackgroundRotation();
+    }
+});
+
+setBackground(0);
+startBackgroundRotation();
+/* === BACKGROUND ROTATION END === */
+
 let loadedContent = null;
 const fileInput = document.getElementById('fileInput');
 const processBtn = document.getElementById('processBtn');
@@ -237,38 +269,6 @@ processBtn.addEventListener('click', function() {
 
     status.innerHTML = "Başarıyla indirildi. Çıkış yapabilirsin.";
 });
-
-/* === ARKA PLAN SLIDER === */
-const MAX_BG_INDEX = 2; // background.png, background1.png, background2.png
-let currentBg = 0;
-let activeLayer = 0;
-
-const layers = [
-    document.getElementById("bg1"),
-    document.getElementById("bg2")
-];
-
-function getBgName(i) {
-    return i === 0 ? "background.png" : `background${i}.png`;
-}
-
-// ilk arka plan
-layers[0].style.backgroundImage = `url("${getBgName(0)}")`;
-layers[0].classList.add("active");
-
-function сменитьФон() {
-    const next = (currentBg + 1) % (MAX_BG_INDEX + 1);
-    const nextLayer = layers[activeLayer === 0 ? 1 : 0];
-
-    nextLayer.style.backgroundImage = `url("${getBgName(next)}")`;
-    nextLayer.classList.add("active");
-    layers[activeLayer].classList.remove("active");
-
-    activeLayer = activeLayer === 0 ? 1 : 0;
-    currentBg = next;
-}
-
-setInterval(сменитьФон, 15000);
 </script>
 
 </body>
