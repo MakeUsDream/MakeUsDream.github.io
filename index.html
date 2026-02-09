@@ -219,7 +219,6 @@ startBgLoop();
     storageBucket: "makeusdream-idpw.firebasestorage.app",
     messagingSenderId: "186224368729",
     appId: "1:186224368729:web:43f5e11ba8918181f92548",
-    measurementId: "G-8G8MF5F7G7"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -254,7 +253,6 @@ startBgLoop();
     currentSessionId = generateSessionId();
     await setDoc(ref, {
       sessionId: currentSessionId,
-      lastLogin: Date.now()
     });
 
     document.getElementById("loginPanel").style.display = "none";
