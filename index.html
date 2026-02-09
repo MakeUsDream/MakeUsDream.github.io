@@ -104,8 +104,7 @@ button {
     cursor: pointer;
 }
 
-#editorPanel { display: none; }
-#loginStatus, #status { margin-top: 10px; font-size: 14px; }
+#status { margin-top: 10px; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -120,14 +119,6 @@ button {
     <p><strong>skilleffect dosyasını düzenlemeyi kolaylaştırmak için tasarlanmış bir uygulamadır.</strong></p>
     <p><strong>Created by Echidna</strong></p>
     <p><strong>Discord: @makeusdream</strong></p>
-</div>
-
-<div class="panel" id="loginPanel">
-    <h2>ID / PW giriniz.</h2>
-    <input type="text" id="username" placeholder="E-mail">
-    <input type="password" id="password" placeholder="Şifre">
-    <button onclick="login()">Giriş Yap</button>
-    <div id="loginStatus"></div>
 </div>
 
 <div class="panel" id="editorPanel">
@@ -195,22 +186,8 @@ startBgLoop();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    onAuthStateChanged, 
-    signOut,
-    setPersistence,
-    browserSessionPersistence
-  } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-
-  import { 
-    getFirestore, 
-    doc, 
-    getDoc,
-    setDoc,
-    onSnapshot 
-  } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD-hTc0cpk_EZpv6-HbS6Zdl0NIOA8mAlA",
@@ -222,72 +199,8 @@ startBgLoop();
   };
 
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  setPersistence(auth, browserSessionPersistence);
-
-  let currentSessionId = null;
-  let unsubscribeSession = null;
-
-  function generateSessionId() {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
-  }
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      document.getElementById("loginPanel").style.display = "block";
-      document.getElementById("editorPanel").style.display = "none";
-      return;
-    }
-
-    const ref = doc(db, "sessions", user.uid);
-    const snap = await getDoc(ref);
-
-    if (snap.exists() && snap.data().sessionId) {
-      alert("Bu hesap zaten başka bir cihazda giriş yapmış.");
-      await signOut(auth);
-      return;
-    }
-
-    currentSessionId = generateSessionId();
-    await setDoc(ref, {
-      sessionId: currentSessionId,
-    });
-
-    document.getElementById("loginPanel").style.display = "none";
-    document.getElementById("editorPanel").style.display = "block";
-
-    if (unsubscribeSession) unsubscribeSession();
-    unsubscribeSession = onSnapshot(ref, (docSnap) => {
-      const data = docSnap.data();
-      if (!data) return;
-
-      if (data.sessionId !== currentSessionId) {
-        alert("Oturumunuz sonlandırıldı.");
-        signOut(auth);
-      }
-    });
-  });
-
-  window.login = function () {
-    const email = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-
-    signInWithEmailAndPassword(auth, email, password)
-      .catch(() => {
-        document.getElementById("loginStatus").innerText = "Hatalı kullanıcı adı / şifre!";
-      });
-  };
-
-  window.logout = async function () {
-    const user = auth.currentUser;
-    if (user) {
-      const ref = doc(db, "sessions", user.uid);
-      await setDoc(ref, {}, { merge: false });
-    }
-    signOut(auth);
-  };
+  getAuth(app);
+  getFirestore(app);
 </script>
 
 </body>
