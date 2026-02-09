@@ -143,7 +143,7 @@ button {
 
 <script>
 const MAX_BG_INDEX = 2;
-const INTERVAL_MS = 15000;
+const INTERVAL_MS = 1500;
 
 let currentIndex = 0;
 let intervalId = null;
@@ -188,10 +188,16 @@ document.addEventListener("visibilitychange", () => {
 startBgLoop();
 </script>
 
-<!-- Firebase Auth -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut,
+    setPersistence,
+    browserSessionPersistence
+  } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD-hTc0cpk_EZpv6-HbS6Zdl0NIOA8mAlA",
@@ -205,6 +211,8 @@ startBgLoop();
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+
+  setPersistence(auth, browserSessionPersistence);
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
