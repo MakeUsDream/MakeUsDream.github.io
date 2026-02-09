@@ -199,6 +199,13 @@ startBgLoop();
     browserSessionPersistence
   } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
+  import { 
+    getFirestore, 
+    doc, 
+    setDoc, 
+    onSnapshot 
+  } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyD-hTc0cpk_EZpv6-HbS6Zdl0NIOA8mAlA",
     authDomain: "makeusdream-idpw.firebaseapp.com",
@@ -211,14 +218,42 @@ startBgLoop();
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
 
   setPersistence(auth, browserSessionPersistence);
 
-  onAuthStateChanged(auth, (user) => {
+  let currentSessionId = null;
+  let unsubscribeSession = null;
+
+  function generateSessionId() {
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       document.getElementById("loginPanel").style.display = "none";
       document.getElementById("editorPanel").style.display = "block";
-      document.getElementById("loginStatus").innerText = `Hoşgeldin: ${user.email}`;
+
+      currentSessionId = generateSessionId();
+
+      const ref = doc(db, "sessions", user.uid);
+      await setDoc(ref, {
+        sessionId: currentSessionId,
+        lastLogin: Date.now()
+      });
+
+      if (unsubscribeSession) unsubscribeSession();
+
+      unsubscribeSession = onSnapshot(ref, (snap) => {
+        const data = snap.data();
+        if (!data) return;
+
+        if (data.sessionId !== currentSessionId) {
+          alert("Bu hesap başka bir cihazda açıldı. Oturumunuz kapatıldı.");
+          signOut(auth);
+        }
+      });
+
     } else {
       document.getElementById("loginPanel").style.display = "block";
       document.getElementById("editorPanel").style.display = "none";
@@ -230,12 +265,8 @@ startBgLoop();
     const password = document.getElementById("password").value.trim();
 
     signInWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        document.getElementById("loginStatus").innerText = "Giriş başarılı!";
-      })
-      .catch((err) => {
+      .catch(() => {
         document.getElementById("loginStatus").innerText = "Hatalı kullanıcı adı / şifre!";
-        console.error(err);
       });
   };
 
