@@ -202,7 +202,8 @@ startBgLoop();
   import { 
     getFirestore, 
     doc, 
-    setDoc, 
+    getDoc,
+    setDoc,
     onSnapshot 
   } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
@@ -230,34 +231,40 @@ startBgLoop();
   }
 
   onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      document.getElementById("loginPanel").style.display = "none";
-      document.getElementById("editorPanel").style.display = "block";
-
-      currentSessionId = generateSessionId();
-
-      const ref = doc(db, "sessions", user.uid);
-      await setDoc(ref, {
-        sessionId: currentSessionId,
-        lastLogin: Date.now()
-      });
-
-      if (unsubscribeSession) unsubscribeSession();
-
-      unsubscribeSession = onSnapshot(ref, (snap) => {
-        const data = snap.data();
-        if (!data) return;
-
-        if (data.sessionId !== currentSessionId) {
-          alert("Bu hesap başka bir cihazda açıldı. Oturumunuz kapatıldı.");
-          signOut(auth);
-        }
-      });
-
-    } else {
+    if (!user) {
       document.getElementById("loginPanel").style.display = "block";
       document.getElementById("editorPanel").style.display = "none";
+      return;
     }
+
+    const ref = doc(db, "sessions", user.uid);
+    const snap = await getDoc(ref);
+
+    if (snap.exists() && snap.data().sessionId) {
+      alert("Bu hesap zaten başka bir cihazda giriş yapmış.");
+      await signOut(auth);
+      return;
+    }
+
+    currentSessionId = generateSessionId();
+    await setDoc(ref, {
+      sessionId: currentSessionId,
+      lastLogin: Date.now()
+    });
+
+    document.getElementById("loginPanel").style.display = "none";
+    document.getElementById("editorPanel").style.display = "block";
+
+    if (unsubscribeSession) unsubscribeSession();
+    unsubscribeSession = onSnapshot(ref, (docSnap) => {
+      const data = docSnap.data();
+      if (!data) return;
+
+      if (data.sessionId !== currentSessionId) {
+        alert("Oturumunuz sonlandırıldı.");
+        signOut(auth);
+      }
+    });
   });
 
   window.login = function () {
@@ -270,7 +277,12 @@ startBgLoop();
       });
   };
 
-  window.logout = function () {
+  window.logout = async function () {
+    const user = auth.currentUser;
+    if (user) {
+      const ref = doc(db, "sessions", user.uid);
+      await setDoc(ref, {}, { merge: false });
+    }
     signOut(auth);
   };
 </script>
