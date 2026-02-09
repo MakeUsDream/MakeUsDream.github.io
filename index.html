@@ -110,32 +110,42 @@ button {
 </head>
 <body>
 
-<div id="bg-layer" class="bg-layer"></div>
-<div id="bg-layer-next" class="bg-layer"></div>
+<div class="login-container" id="loginPanel">
+  <div class="login-card">
 
-<div class="header">
-    <a href="https://www.youtube.com/@PuB-silkroad" target="_blank">
-        <img src="logo.png" alt="PuB Logo" class="pub-logo">
-    </a>
-    <p><strong>skilleffect dosyasını düzenlemeyi kolaylaştırmak için tasarlanmış bir uygulamadır.</strong></p>
-    <p><strong>Created by Echidna</strong></p>
-    <p><strong>Discord: @makeusdream</strong></p>
-</div>
+    <div class="login-header">
+      <h2>Giriş Yap</h2>
+      <p>Devam etmek için hesabınıza giriş yapın</p>
+    </div>
 
-<div class="panel" id="editorPanel">
-    <h2>Yapmak istediğiniz .pk2 türünü seçiniz.</h2>
+    <div class="form-group">
+      <div class="input-wrapper">
+        <input type="email" id="username" required>
+        <label>E-mail</label>
+      </div>
+      <span class="error-message" id="emailError">E-mail hatalı</span>
+    </div>
 
-    <select id="mode">
-        <option value="resimli">Resimli</option>
-        <option value="kelebek">Kelebek</option>
-        <option value="resimli100">Resimli100</option>
-        <option value="medusa">Medusa</option>
-    </select>
+    <div class="form-group">
+      <div class="input-wrapper password-wrapper">
+        <input type="password" id="password" required>
+        <label>Şifre</label>
 
-    <input type="file" id="fileInput" accept=".txt" hidden>
-    <button onclick="document.getElementById('fileInput').click()">Düzenlenecek skilleffect'i seç.</button>
-    <button id="processBtn" disabled>İndir!</button>
-    <div id="status"></div>
+        <button class="password-toggle" type="button" onclick="togglePassword()">
+          <span class="eye-icon" id="eyeIcon"></span>
+        </button>
+      </div>
+      <span class="error-message" id="passwordError">Şifre hatalı</span>
+    </div>
+
+    <button class="login-btn" onclick="login()" id="loginBtn">
+      <span class="btn-text">Giriş Yap</span>
+      <span class="btn-loader"></span>
+    </button>
+
+    <div id="loginStatus" class="error-message"></div>
+
+  </div>
 </div>
 
 <script>
